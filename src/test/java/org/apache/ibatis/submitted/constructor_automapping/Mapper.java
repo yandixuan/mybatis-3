@@ -13,27 +13,12 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.apache.ibatis.submitted.sqlprovider;
+package org.apache.ibatis.submitted.constructor_automapping;
 
-public class User {
-  @BaseMapper.Column
-  private Integer id;
-  @BaseMapper.Column
-  private String name;
+import java.util.List;
 
-  public Integer getId() {
-    return id;
-  }
+public interface Mapper {
 
-  public void setId(Integer id) {
-    this.id = id;
-  }
+  List<Article> nestedConstructorAutomapping();
 
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
 }

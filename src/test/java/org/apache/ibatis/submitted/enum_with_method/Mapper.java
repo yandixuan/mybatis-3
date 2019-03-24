@@ -13,27 +13,12 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.apache.ibatis.submitted.sqlprovider;
+package org.apache.ibatis.submitted.enum_with_method;
 
-public class User {
-  @BaseMapper.Column
-  private Integer id;
-  @BaseMapper.Column
-  private String name;
+public interface Mapper {
 
-  public Integer getId() {
-    return id;
-  }
+    User getUser(Integer id);
 
-  public void setId(Integer id) {
-    this.id = id;
-  }
+    void insertUser(User user);
 
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
 }

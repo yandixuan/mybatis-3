@@ -13,13 +13,13 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.apache.ibatis.submitted.sqlprovider;
+package org.apache.ibatis.submitted.constructor_automapping;
 
-public class User {
-  @BaseMapper.Column
+public class Article {
+
   private Integer id;
-  @BaseMapper.Column
-  private String name;
+  private String title;
+  private Author author;
 
   public Integer getId() {
     return id;
@@ -29,11 +29,19 @@ public class User {
     this.id = id;
   }
 
-  public String getName() {
-    return name;
+  public String getTitle() {
+    return title;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setTitle(String title) {
+    this.title = title;
+  }
+
+  public Author getAuthor() {
+    return author;
+  }
+
+  public void setAuthor(Author author) {
+    this.author = author;
   }
 }

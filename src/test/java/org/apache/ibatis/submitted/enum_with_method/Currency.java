@@ -13,27 +13,25 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.apache.ibatis.submitted.sqlprovider;
+package org.apache.ibatis.submitted.enum_with_method;
 
-public class User {
-  @BaseMapper.Column
-  private Integer id;
-  @BaseMapper.Column
-  private String name;
+import java.math.BigDecimal;
 
-  public Integer getId() {
-    return id;
-  }
+public enum Currency {
 
-  public void setId(Integer id) {
-    this.id = id;
-  }
+    Dollar {
+        @Override
+        public BigDecimal getExchange() {
+            return null;
+        }
+    },
 
-  public String getName() {
-    return name;
-  }
+    RMB {
+        @Override
+        public BigDecimal getExchange() {
+            return null;
+        }
+    };
 
-  public void setName(String name) {
-    this.name = name;
-  }
+    public abstract BigDecimal getExchange();
 }

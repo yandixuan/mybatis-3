@@ -13,11 +13,12 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.apache.ibatis.submitted.enum_interface_type_handler;
+package org.apache.ibatis.submitted.constructor_automapping;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.Reader;
+import java.util.List;
 
 import org.apache.ibatis.BaseDataTest;
 import org.apache.ibatis.io.Resources;
@@ -27,55 +28,34 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-class EnumInterfaceTypeHandlerTest {
+class ConstructorAutomappingTest {
 
   private static SqlSessionFactory sqlSessionFactory;
 
   @BeforeAll
   static void setUp() throws Exception {
     // create an SqlSessionFactory
-    try (Reader reader = Resources.getResourceAsReader(
-        "org/apache/ibatis/submitted/enum_interface_type_handler/mybatis-config.xml")) {
+    try (Reader reader = Resources
+        .getResourceAsReader("org/apache/ibatis/submitted/constructor_automapping/mybatis-config.xml")) {
       sqlSessionFactory = new SqlSessionFactoryBuilder().build(reader);
     }
 
     // populate in-memory database
     BaseDataTest.runScript(sqlSessionFactory.getConfiguration().getEnvironment().getDataSource(),
-            "org/apache/ibatis/submitted/enum_interface_type_handler/CreateDB.sql");
+        "org/apache/ibatis/submitted/constructor_automapping/CreateDB.sql");
   }
 
   @Test
-  void shouldGetAUser() {
+  void shouldHandleColumnPrefixCorrectly() {
     try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
       Mapper mapper = sqlSession.getMapper(Mapper.class);
-      User user = mapper.getUser(1);
-      assertEquals(Color.RED, user.getColor());
-    }
-  }
-
-  @Test
-  void shouldInsertAUser() {
-    try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
-      Mapper mapper = sqlSession.getMapper(Mapper.class);
-      User user = new User();
-      user.setId(2);
-      user.setColor(Color.BLUE);
-      mapper.insertUser(user);
-      User result = mapper.getUser(2);
-      assertEquals(Color.BLUE, result.getColor());
-    }
-  }
-
-  @Test
-  void shouldInsertAUserWithoutParameterTypeInXmlElement() {
-    try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
-      XmlMapper mapper = sqlSession.getMapper(XmlMapper.class);
-      User user = new User();
-      user.setId(2);
-      user.setColor(Color.BLUE);
-      mapper.insertUser(user);
-      User result = sqlSession.getMapper(Mapper.class).getUser(2);
-      assertEquals(Color.BLUE, result.getColor());
+      List<Article> articles = mapper.nestedConstructorAutomapping();
+      assertEquals(2, articles.size());
+      Article article1 = articles.get(0);
+      assertEquals("Article1", article1.getTitle());
+      Author author1 = article1.getAuthor();
+      assertEquals(Integer.valueOf(100), author1.getId());
+      assertEquals("Author1", author1.getName());
     }
   }
 
