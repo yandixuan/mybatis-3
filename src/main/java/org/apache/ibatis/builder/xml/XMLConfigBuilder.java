@@ -402,16 +402,24 @@ public class XMLConfigBuilder extends BaseBuilder {
 
   private void typeHandlerElement(XNode parent) {
     if (parent != null) {
+      // 遍历子节点
       for (XNode child : parent.getChildren()) {
+        // 如果配置了package 那么调用TypeHandlerRegistry.register 注册该包下的类
         if ("package".equals(child.getName())) {
+          // 获取xml包名属性
           String typeHandlerPackage = child.getStringAttribute("name");
           typeHandlerRegistry.register(typeHandlerPackage);
         } else {
+          // 如果配置了具体的TypeHandler,那么解析节点属性
+          // 依次获取javaType、jdbcType、handler的类
           String javaTypeName = child.getStringAttribute("javaType");
           String jdbcTypeName = child.getStringAttribute("jdbcType");
           String handlerTypeName = child.getStringAttribute("handler");
+          // 如果是alias就去typeAliasRegistry 根据别名找出实际对应的java 类型
           Class<?> javaTypeClass = resolveClass(javaTypeName);
+          // 根据jdbcTypeName 找到实际的对应数据库jdbcType
           JdbcType jdbcType = resolveJdbcType(jdbcTypeName);
+          // 获取handlerType的class
           Class<?> typeHandlerClass = resolveClass(handlerTypeName);
           if (javaTypeClass != null) {
             if (jdbcType == null) {
@@ -420,6 +428,7 @@ public class XMLConfigBuilder extends BaseBuilder {
               typeHandlerRegistry.register(javaTypeClass, jdbcType, typeHandlerClass);
             }
           } else {
+            // 如果javaTypeClass为空
             typeHandlerRegistry.register(typeHandlerClass);
           }
         }
@@ -429,7 +438,9 @@ public class XMLConfigBuilder extends BaseBuilder {
 
   private void mapperElement(XNode parent) throws Exception {
     if (parent != null) {
+      // 遍历节点
       for (XNode child : parent.getChildren()) {
+        // 如果是 package 标签，则扫描该包
         if ("package".equals(child.getName())) {
           String mapperPackage = child.getStringAttribute("name");
           configuration.addMappers(mapperPackage);
