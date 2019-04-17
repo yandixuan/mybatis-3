@@ -69,10 +69,11 @@ public class MapperBuilderAssistant extends BaseBuilder {
   }
 
   public void setCurrentNamespace(String currentNamespace) {
+    // 如果传入的 currentNamespace 参数为空，抛出 BuilderException 异常
     if (currentNamespace == null) {
       throw new BuilderException("The mapper element requires a namespace attribute to be specified.");
     }
-
+    // 如果当前已经设置，并且还和传入的不相等，抛出 BuilderException 异常
     if (this.currentNamespace != null && !this.currentNamespace.equals(currentNamespace)) {
       throw new BuilderException("Wrong namespace. Expected '"
           + this.currentNamespace + "' but found '" + currentNamespace + "'.");
@@ -261,11 +262,11 @@ public class MapperBuilderAssistant extends BaseBuilder {
       String databaseId,
       LanguageDriver lang,
       String resultSets) {
-
+    // 如果对应的Cache未解析，抛出 IncompleteElementException 异常
     if (unresolvedCacheRef) {
       throw new IncompleteElementException("Cache-ref not yet resolved");
     }
-
+    // 拼接id、判断是不是select语句
     id = applyCurrentNamespace(id, false);
     boolean isSelect = sqlCommandType == SqlCommandType.SELECT;
 
@@ -286,7 +287,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
         .flushCacheRequired(valueOrDefault(flushCache, !isSelect))
         .useCache(valueOrDefault(useCache, isSelect))
         .cache(currentCache);
-
+    // 获得 ParameterMap ，并设置到 MappedStatement.Builder 中
     ParameterMap statementParameterMap = getStatementParameterMap(parameterMap, parameterType, id);
     if (statementParameterMap != null) {
       statementBuilder.parameterMap(statementParameterMap);
@@ -313,8 +314,10 @@ public class MapperBuilderAssistant extends BaseBuilder {
       } catch (IllegalArgumentException e) {
         throw new IncompleteElementException("Could not find parameter map " + parameterMapName, e);
       }
+      // 标签上的parameterType存在 那么优先new 一个ParameterMap
     } else if (parameterTypeClass != null) {
       List<ParameterMapping> parameterMappings = new ArrayList<>();
+      // parameterMap的ID为${statementId}+"-Inline"
       parameterMap = new ParameterMap.Builder(
           configuration,
           statementId + "-Inline",
@@ -328,8 +331,9 @@ public class MapperBuilderAssistant extends BaseBuilder {
       String resultMap,
       Class<?> resultType,
       String statementId) {
+    // 获得 resultMap 的编号
     resultMap = applyCurrentNamespace(resultMap, true);
-
+    // 创建 ResultMap 集合
     List<ResultMap> resultMaps = new ArrayList<>();
     if (resultMap != null) {
       String[] resultMapNames = resultMap.split(",");
@@ -340,6 +344,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
           throw new IncompleteElementException("Could not find result map " + resultMapName, e);
         }
       }
+      // resultType存在则创建 ResultMap 对象
     } else if (resultType != null) {
       ResultMap inlineResultMap = new ResultMap.Builder(
           configuration,
@@ -367,9 +372,13 @@ public class MapperBuilderAssistant extends BaseBuilder {
       String resultSet,
       String foreignColumn,
       boolean lazy) {
+    // 获取javaType
     Class<?> javaTypeClass = resolveResultJavaType(resultType, property, javaType);
+    // 获取该 javaType的typeHandler实例对象
     TypeHandler<?> typeHandlerInstance = resolveTypeHandler(javaTypeClass, typeHandler);
+    // 解析组合字段名称成 ResultMapping 集合，涉及「关联的嵌套查询」
     List<ResultMapping> composites = parseCompositeColumnName(column);
+    // 创建 ResultMapping 对象
     return new ResultMapping.Builder(configuration, property, column, javaTypeClass)
         .jdbcType(jdbcType)
         .nestedQueryId(applyCurrentNamespace(nestedSelect, true))
@@ -417,14 +426,17 @@ public class MapperBuilderAssistant extends BaseBuilder {
   }
 
   private Class<?> resolveResultJavaType(Class<?> resultType, String property, Class<?> javaType) {
+    // 如果对应javaType为空且property不为空
     if (javaType == null && property != null) {
       try {
+        // 尝试获取改类的metaClass通过反射获取该属性的javaType
         MetaClass metaResultType = MetaClass.forClass(resultType, configuration.getReflectorFactory());
         javaType = metaResultType.getSetterType(property);
       } catch (Exception e) {
         //ignore, following null check statement will deal with the situation
       }
     }
+    // 如果上述无法找到，那么javaType就是Object.class
     if (javaType == null) {
       javaType = Object.class;
     }

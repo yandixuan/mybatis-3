@@ -60,6 +60,7 @@ public class ProviderSqlSource implements SqlSource {
       Lang lang = mapperMethod == null ? null : mapperMethod.getAnnotation(Lang.class);
       this.languageDriver = configuration.getLanguageDriver(lang == null ? null : lang.value());
       this.providerType = (Class<?>) provider.getClass().getMethod("type").invoke(provider);
+      // 获取sqlProvider的实现类
       providerMethodName = (String) provider.getClass().getMethod("method").invoke(provider);
 
       if (providerMethodName.length() == 0 && ProviderMethodResolver.class.isAssignableFrom(this.providerType)) {
