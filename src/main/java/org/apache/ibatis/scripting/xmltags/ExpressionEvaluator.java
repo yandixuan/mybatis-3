@@ -47,6 +47,7 @@ public class ExpressionEvaluator {
     if (value instanceof Iterable) {
       return (Iterable<?>) value;
     }
+    // 如果value是数组的话，那么一次不元素塞入一个新的List返回
     if (value.getClass().isArray()) {
       // the array may be primitive, so Arrays.asList() may throw
       // a ClassCastException (issue 209).  Do the work manually
@@ -59,6 +60,7 @@ public class ExpressionEvaluator {
       }
       return answer;
     }
+    // 如果value是Map那么直接返回Map的entrySet
     if (value instanceof Map) {
       return ((Map) value).entrySet();
     }

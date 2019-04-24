@@ -28,11 +28,25 @@ import org.apache.ibatis.session.Configuration;
  * @author Clinton Begin
  */
 public class TrimSqlNode implements SqlNode {
-
+  /**
+   * 内含的 SqlNode 节点
+   */
   private final SqlNode contents;
+  /**
+   * 前缀
+   */
   private final String prefix;
+  /**
+   * 后缀
+   */
   private final String suffix;
+  /**
+   * 需要被删除的前缀
+   */
   private final List<String> prefixesToOverride;
+  /**
+   * 需要被删除的后缀
+   */
   private final List<String> suffixesToOverride;
   private final Configuration configuration;
 
@@ -57,7 +71,9 @@ public class TrimSqlNode implements SqlNode {
     return result;
   }
 
+
   private static List<String> parseOverrides(String overrides) {
+    // 使用 | 分隔字符串成字符串数组，并都转换成大写
     if (overrides != null) {
       final StringTokenizer parser = new StringTokenizer(overrides, "|", false);
       final List<String> list = new ArrayList<>(parser.countTokens());
@@ -70,8 +86,17 @@ public class TrimSqlNode implements SqlNode {
   }
 
   private class FilteredDynamicContext extends DynamicContext {
+    /**
+     * 委托的 DynamicContext 对象
+     */
     private DynamicContext delegate;
+    /**
+     * 是否 prefix 已经被应用
+     */
     private boolean prefixApplied;
+    /**
+     * 是否 suffix 已经被应用
+     */
     private boolean suffixApplied;
     private StringBuilder sqlBuffer;
 
@@ -84,12 +109,16 @@ public class TrimSqlNode implements SqlNode {
     }
 
     public void applyAll() {
+      // trim 掉多余的空格，生成新的 sqlBuffer 对象
       sqlBuffer = new StringBuilder(sqlBuffer.toString().trim());
+      // 将 sqlBuffer 大写，生成新的 trimmedUppercaseSql 对象
       String trimmedUppercaseSql = sqlBuffer.toString().toUpperCase(Locale.ENGLISH);
+      // 应用 TrimSqlNode 的 trim 逻辑
       if (trimmedUppercaseSql.length() > 0) {
         applyPrefix(sqlBuffer, trimmedUppercaseSql);
         applySuffix(sqlBuffer, trimmedUppercaseSql);
       }
+      // 将结果，添加到 delegate 中
       delegate.appendSql(sqlBuffer.toString());
     }
 

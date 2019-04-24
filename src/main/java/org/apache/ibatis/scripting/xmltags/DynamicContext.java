@@ -35,14 +35,22 @@ public class DynamicContext {
   public static final String DATABASE_ID_KEY = "_databaseId";
 
   static {
+    // 设置 OGNL 的属性访问器
     OgnlRuntime.setPropertyAccessor(ContextMap.class, new ContextAccessor());
   }
 
   private final ContextMap bindings;
+  /**
+   * 生成后的 SQL
+   */
   private final StringJoiner sqlBuilder = new StringJoiner(" ");
+  /**
+   * 唯一编号。在 {@link org.apache.ibatis.scripting.xmltags.XMLScriptBuilder.ForEachHandler} 使用
+   */
   private int uniqueNumber = 0;
 
   public DynamicContext(Configuration configuration, Object parameterObject) {
+    // 如果parameterObject且不是map 那么转成 MetaObject
     if (parameterObject != null && !(parameterObject instanceof Map)) {
       MetaObject metaObject = configuration.newMetaObject(parameterObject);
       bindings = new ContextMap(metaObject);
@@ -88,7 +96,7 @@ public class DynamicContext {
       if (super.containsKey(strKey)) {
         return super.get(strKey);
       }
-
+      // 如果自身的Map里没有找到那么就尝试从parameterMetaObject里取
       if (parameterMetaObject != null) {
         // issue #61 do not modify the context when reading
         return parameterMetaObject.getValue(strKey);

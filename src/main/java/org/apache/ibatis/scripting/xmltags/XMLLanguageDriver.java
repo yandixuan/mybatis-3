@@ -49,6 +49,7 @@ public class XMLLanguageDriver implements LanguageDriver {
     // issue #3
     if (script.startsWith("<script>")) {
       XPathParser parser = new XPathParser(script, false, configuration.getVariables(), new XMLMapperEntityResolver());
+      // 调用上面的 createSqlSource(...) 方法，创建 SqlSource 对象
       return createSqlSource(configuration, parser.evalNode("/script"), parameterType);
     } else {
       // issue #127

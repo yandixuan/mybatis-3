@@ -21,6 +21,8 @@ import java.util.List;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * SetSqlNode 作用是在sql中添加set，并且在sql前面去除多余的','
+ * 所以直接继承TrimSqlNode
  * @author Clinton Begin
  */
 public class SetSqlNode extends TrimSqlNode {

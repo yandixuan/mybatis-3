@@ -21,6 +21,9 @@ import java.util.List;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * whereSqlNode 相对于来说只是添加where关键字 可以直接是trimSqlNode的一种实现
+ * 对于trimSqlNode 前缀统一是where 需要移除的前缀有 AND 或者 OR
+ * 所以说whereSqlNode直接继承TrimSqlNode
  * @author Clinton Begin
  */
 public class WhereSqlNode extends TrimSqlNode {
