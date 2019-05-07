@@ -49,24 +49,30 @@ public interface ProviderMethodResolver {
    * @throws BuilderException Throws when cannot resolve a target method
    */
   default Method resolveMethod(ProviderContext context) {
+    // 过滤与MapperMethod相同限定名的method
     List<Method> sameNameMethods = Arrays.stream(getClass().getMethods())
         .filter(m -> m.getName().equals(context.getMapperMethod().getName()))
         .collect(Collectors.toList());
+    // 相同方法名的list为空，在指定的SqlProvider的实现类下没有找到相应的mapperMethod抛出异常
     if (sameNameMethods.isEmpty()) {
       throw new BuilderException("Cannot resolve the provider method because '"
           + context.getMapperMethod().getName() + "' not found in SqlProvider '" + getClass().getName() + "'.");
     }
+    // 方法要返回CharSequence的实例类也就是字符串sql
     List<Method> targetMethods = sameNameMethods.stream()
         .filter(m -> CharSequence.class.isAssignableFrom(m.getReturnType()))
         .collect(Collectors.toList());
+    // 个数为1直接返回
     if (targetMethods.size() == 1) {
       return targetMethods.get(0);
     }
+    // list为空则抛BuilderException
     if (targetMethods.isEmpty()) {
       throw new BuilderException("Cannot resolve the provider method because '"
           + context.getMapperMethod().getName() + "' does not return the CharSequence or its subclass in SqlProvider '"
           + getClass().getName() + "'.");
     } else {
+      // list的个数大于1则抛出存在多条相同的SqlProvider
       throw new BuilderException("Cannot resolve the provider method because '"
           + context.getMapperMethod().getName() + "' is found multiple in SqlProvider '" + getClass().getName() + "'.");
     }

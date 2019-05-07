@@ -40,21 +40,34 @@ public class SqlSourceBuilder extends BaseBuilder {
   }
 
   public SqlSource parse(String originalSql, Class<?> parameterType, Map<String, Object> additionalParameters) {
+    // 创建 ParameterMappingTokenHandler 对象 负责将匹配到的'#{'和'}' 替换成占位符 '?'
     ParameterMappingTokenHandler handler = new ParameterMappingTokenHandler(configuration, parameterType, additionalParameters);
+    // 创建 GenericTokenParser 对象
     GenericTokenParser parser = new GenericTokenParser("#{", "}", handler);
     String sql = parser.parse(originalSql);
+    // 创建 StaticSqlSource 对象
     return new StaticSqlSource(configuration, sql, handler.getParameterMappings());
   }
 
   private static class ParameterMappingTokenHandler extends BaseBuilder implements TokenHandler {
 
+    /**
+     * ParameterMapping 数组
+     */
     private List<ParameterMapping> parameterMappings = new ArrayList<>();
+    /**
+     * 参数类型
+     */
     private Class<?> parameterType;
+    /**
+     * additionalParameters 参数的对应的 MetaObject 对象
+     */
     private MetaObject metaParameters;
 
     public ParameterMappingTokenHandler(Configuration configuration, Class<?> parameterType, Map<String, Object> additionalParameters) {
       super(configuration);
       this.parameterType = parameterType;
+      // 创建 additionalParameters 参数的对应的 MetaObject 对象
       this.metaParameters = configuration.newMetaObject(additionalParameters);
     }
 
@@ -64,12 +77,15 @@ public class SqlSourceBuilder extends BaseBuilder {
 
     @Override
     public String handleToken(String content) {
+      // 构建 ParameterMapping 对象，并添加到 parameterMappings 中
       parameterMappings.add(buildParameterMapping(content));
       return "?";
     }
 
     private ParameterMapping buildParameterMapping(String content) {
+      // 解析成 Map 集合
       Map<String, String> propertiesMap = parseParameterMapping(content);
+      // 获得属性的名字和类型
       String property = propertiesMap.get("property");
       Class<?> propertyType;
       if (metaParameters.hasGetter(property)) { // issue #448 get type from additional params
@@ -77,10 +93,13 @@ public class SqlSourceBuilder extends BaseBuilder {
       } else if (typeHandlerRegistry.hasTypeHandler(parameterType)) {
         propertyType = parameterType;
       } else if (JdbcType.CURSOR.name().equals(propertiesMap.get("jdbcType"))) {
+        // 如果propertiesMap里的jdbcType是游标，那么它的类型是java.sql.ResultSet
         propertyType = java.sql.ResultSet.class;
       } else if (property == null || Map.class.isAssignableFrom(parameterType)) {
+        // 如果property为空或者parameterType是Map的实例，那么propertyType是Object.class
         propertyType = Object.class;
       } else {
+        // 以上情况都不符合，那么重新反射这个parameterType
         MetaClass metaClass = MetaClass.forClass(parameterType, configuration.getReflectorFactory());
         if (metaClass.hasGetter(property)) {
           propertyType = metaClass.getGetterType(property);

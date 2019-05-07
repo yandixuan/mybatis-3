@@ -23,8 +23,13 @@ public class RowBounds {
   public static final int NO_ROW_OFFSET = 0;
   public static final int NO_ROW_LIMIT = Integer.MAX_VALUE;
   public static final RowBounds DEFAULT = new RowBounds();
-
+  /**
+   * 分页的start
+   */
   private final int offset;
+  /**
+   * 分页的pageSize
+   */
   private final int limit;
 
   public RowBounds() {

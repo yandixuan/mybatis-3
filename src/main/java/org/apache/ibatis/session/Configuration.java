@@ -587,6 +587,7 @@ public class Configuration {
   }
 
   public Executor newExecutor(Transaction transaction, ExecutorType executorType) {
+    // 获得执行器类型 默认使用ExecutorType.SIMPLE
     executorType = executorType == null ? defaultExecutorType : executorType;
     executorType = executorType == null ? ExecutorType.SIMPLE : executorType;
     Executor executor;
@@ -597,9 +598,11 @@ public class Configuration {
     } else {
       executor = new SimpleExecutor(this, transaction);
     }
+    // 如果开启了二级缓存 默认开启 但是还需要开启mapper的缓存空间才有用
     if (cacheEnabled) {
       executor = new CachingExecutor(executor);
     }
+    // 应用插件
     executor = (Executor) interceptorChain.pluginAll(executor);
     return executor;
   }

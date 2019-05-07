@@ -45,6 +45,7 @@ public class SimpleExecutor extends BaseExecutor {
     Statement stmt = null;
     try {
       Configuration configuration = ms.getConfiguration();
+      // 创建 StatementHandler 对象
       StatementHandler handler = configuration.newStatementHandler(this, ms, parameter, RowBounds.DEFAULT, null, null);
       stmt = prepareStatement(handler, ms.getStatementLog());
       return handler.update(stmt);
@@ -57,7 +58,9 @@ public class SimpleExecutor extends BaseExecutor {
   public <E> List<E> doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException {
     Statement stmt = null;
     try {
+      // 获得 Connection 对象
       Configuration configuration = ms.getConfiguration();
+      // 创建 Statement 或 PrepareStatement 对象
       StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
       stmt = prepareStatement(handler, ms.getStatementLog());
       return handler.query(stmt, resultHandler);
@@ -82,8 +85,11 @@ public class SimpleExecutor extends BaseExecutor {
 
   private Statement prepareStatement(StatementHandler handler, Log statementLog) throws SQLException {
     Statement stmt;
+    // 获得 Connection 对象
     Connection connection = getConnection(statementLog);
+    // 创建 Statement 或 PrepareStatement 对象
     stmt = handler.prepare(connection, transaction.getTimeout());
+    // 设置 SQL 上的参数，例如 PrepareStatement 对象上的占位符
     handler.parameterize(stmt);
     return stmt;
   }

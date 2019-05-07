@@ -26,6 +26,9 @@ import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 
 /**
+ * 继承自Cache接口，主要作用是保存SqlSession在事务中需要向某个二级缓存提交的缓存数据
+ * （因为事务过程中的数据可能会回滚，所以不能直接把数据就提交二级缓存，而是暂存在TransactionalCache中，
+ * 在事务提交后再将过程中存放在其中的数据提交到二级缓存，如果事务回滚，则将数据清除掉）
  * The 2nd level cache transactional buffer.
  * <p>
  * This class holds all cache entries that are to be added to the 2nd level cache during a Session.
@@ -39,10 +42,24 @@ import org.apache.ibatis.logging.LogFactory;
 public class TransactionalCache implements Cache {
 
   private static final Log log = LogFactory.getLog(TransactionalCache.class);
-
+  /**
+   * 代理
+   */
   private final Cache delegate;
+  /**
+   * 提交时，清空 {@link #delegate}
+   *
+   * 初始时，该值为 false
+   * 清理后{@link #clear()} 时，该值为 true ，表示持续处于清空状态
+   */
   private boolean clearOnCommit;
+  /**
+   * 需要在commit时提交到二级缓存的数据
+   */
   private final Map<Object, Object> entriesToAddOnCommit;
+  /**
+   * 缓存未命中的数据，事务commit时，也会放入二级缓存（key,null）
+   */
   private final Set<Object> entriesMissedInCache;
 
   public TransactionalCache(Cache delegate) {
@@ -118,9 +135,11 @@ public class TransactionalCache implements Cache {
   }
 
   private void flushPendingEntries() {
+    // 将 entriesToAddOnCommit 刷入 delegate 中
     for (Map.Entry<Object, Object> entry : entriesToAddOnCommit.entrySet()) {
       delegate.putObject(entry.getKey(), entry.getValue());
     }
+    // 将 entriesMissedInCache 刷入 delegate 中
     for (Object entry : entriesMissedInCache) {
       if (!entriesToAddOnCommit.containsKey(entry)) {
         delegate.putObject(entry, null);

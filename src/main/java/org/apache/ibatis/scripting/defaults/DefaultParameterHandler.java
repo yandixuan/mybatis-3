@@ -39,9 +39,17 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 public class DefaultParameterHandler implements ParameterHandler {
 
   private final TypeHandlerRegistry typeHandlerRegistry;
-
+  /**
+   * MappedStatement 对象
+   */
   private final MappedStatement mappedStatement;
+  /**
+   * 参数对象
+   */
   private final Object parameterObject;
+  /**
+   * BoundSql 对象
+   */
   private final BoundSql boundSql;
   private final Configuration configuration;
 
@@ -63,10 +71,13 @@ public class DefaultParameterHandler implements ParameterHandler {
     ErrorContext.instance().activity("setting parameters").object(mappedStatement.getParameterMap().getId());
     List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
     if (parameterMappings != null) {
+      // 遍历 ParameterMapping 数组
       for (int i = 0; i < parameterMappings.size(); i++) {
         ParameterMapping parameterMapping = parameterMappings.get(i);
+        // 不考虑ParameterMode.OUT的模式
         if (parameterMapping.getMode() != ParameterMode.OUT) {
           Object value;
+          // 获取参数名称
           String propertyName = parameterMapping.getProperty();
           if (boundSql.hasAdditionalParameter(propertyName)) { // issue #448 ask first for additional params
             value = boundSql.getAdditionalParameter(propertyName);
@@ -75,15 +86,18 @@ public class DefaultParameterHandler implements ParameterHandler {
           } else if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
             value = parameterObject;
           } else {
+            // 如果上述都没找到，那么通过MetaObject进行反射获取
             MetaObject metaObject = configuration.newMetaObject(parameterObject);
             value = metaObject.getValue(propertyName);
           }
+          // 获得 typeHandler、jdbcType 属性
           TypeHandler typeHandler = parameterMapping.getTypeHandler();
           JdbcType jdbcType = parameterMapping.getJdbcType();
           if (value == null && jdbcType == null) {
             jdbcType = configuration.getJdbcTypeForNull();
           }
           try {
+            // 设置 ? 占位符的参数
             typeHandler.setParameter(ps, i + 1, value, jdbcType);
           } catch (TypeException | SQLException e) {
             throw new TypeException("Could not set parameters for mapping: " + parameterMapping + ". Cause: " + e, e);

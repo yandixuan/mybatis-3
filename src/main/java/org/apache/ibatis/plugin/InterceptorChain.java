@@ -27,7 +27,9 @@ public class InterceptorChain {
   private final List<Interceptor> interceptors = new ArrayList<>();
 
   public Object pluginAll(Object target) {
+    // 遍历拦截器链
     for (Interceptor interceptor : interceptors) {
+      // 不断为生成的代理对象进行JDK动态代理生成代理对象
       target = interceptor.plugin(target);
     }
     return target;

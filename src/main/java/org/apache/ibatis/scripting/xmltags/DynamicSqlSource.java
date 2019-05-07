@@ -26,6 +26,9 @@ import org.apache.ibatis.session.Configuration;
 public class DynamicSqlSource implements SqlSource {
 
   private final Configuration configuration;
+  /**
+   * 根SqlNode对象
+   */
   private final SqlNode rootSqlNode;
 
   public DynamicSqlSource(Configuration configuration, SqlNode rootSqlNode) {
@@ -35,12 +38,19 @@ public class DynamicSqlSource implements SqlSource {
 
   @Override
   public BoundSql getBoundSql(Object parameterObject) {
+    // 创建动态SQL的上下文
     DynamicContext context = new DynamicContext(configuration, parameterObject);
+    // 应用 rootSqlNode
     rootSqlNode.apply(context);
+    // 创建 SqlSourceBuilder 对象
     SqlSourceBuilder sqlSourceParser = new SqlSourceBuilder(configuration);
+    // 获取参数的类型
     Class<?> parameterType = parameterObject == null ? Object.class : parameterObject.getClass();
+    // 解析出 SqlSource 对象
     SqlSource sqlSource = sqlSourceParser.parse(context.getSql(), parameterType, context.getBindings());
+    // 获得 BoundSql 对象
     BoundSql boundSql = sqlSource.getBoundSql(parameterObject);
+    // 添加附加参数到 BoundSql 对象中
     context.getBindings().forEach(boundSql::setAdditionalParameter);
     return boundSql;
   }

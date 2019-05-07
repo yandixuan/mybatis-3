@@ -24,9 +24,22 @@ import org.apache.ibatis.mapping.MappedStatement;
  * @author Clinton Begin
  */
 public interface KeyGenerator {
-
+  /**
+   * SQL 执行前
+   * @param executor
+   * @param ms
+   * @param stmt
+   * @param parameter
+   */
   void processBefore(Executor executor, MappedStatement ms, Statement stmt, Object parameter);
 
+  /**
+   * SQL 执行后
+   * @param executor
+   * @param ms
+   * @param stmt
+   * @param parameter
+   */
   void processAfter(Executor executor, MappedStatement ms, Statement stmt, Object parameter);
 
 }

@@ -50,37 +50,49 @@ public class ParamNameResolver {
   private boolean hasParamAnnotation;
 
   public ParamNameResolver(Configuration config, Method method) {
+    // 反射获取该方法上的参数
     final Class<?>[] paramTypes = method.getParameterTypes();
+    // 获取参数上的注解
     final Annotation[][] paramAnnotations = method.getParameterAnnotations();
     final SortedMap<Integer, String> map = new TreeMap<>();
+    // 获取参数的个数
     int paramCount = paramAnnotations.length;
     // get names from @Param annotations
     for (int paramIndex = 0; paramIndex < paramCount; paramIndex++) {
+      // 若果参数类型是 ResultHandler,RowBounds的实现类就跳过
       if (isSpecialParameter(paramTypes[paramIndex])) {
         // skip special parameters
         continue;
       }
       String name = null;
+      // 可能有多个注解，那么依次遍历
       for (Annotation annotation : paramAnnotations[paramIndex]) {
+        // 若果是@Param注解，改写标志并且终止循环
         if (annotation instanceof Param) {
           hasParamAnnotation = true;
           name = ((Param) annotation).value();
           break;
         }
       }
+      // 若果没取到name
       if (name == null) {
         // @Param was not specified.
+        // 全局是否配置了useActualParamName属性
         if (config.isUseActualParamName()) {
+          // name就为相应的index的参数名称
           name = getActualParamName(method, paramIndex);
         }
         if (name == null) {
           // use the parameter index as the name ("0", "1", ...)
           // gcode issue #71
+          // 如果name就为当前map的size，也就是序号
           name = String.valueOf(map.size());
         }
       }
+      // map放入参数位置，名称键值对
       map.put(paramIndex, name);
     }
+    // 锁定map
     names = Collections.unmodifiableSortedMap(map);
   }
 

@@ -353,6 +353,11 @@ public class MapperMethod {
       this.paramNameResolver = new ParamNameResolver(configuration, method);
     }
 
+    /**
+     * 将接口上的参数 如果带有@Param注解那么将转成ParamMap
+     * @param args
+     * @return
+     */
     public Object convertArgsToSqlCommandParam(Object[] args) {
       return paramNameResolver.getNamedParams(args);
     }

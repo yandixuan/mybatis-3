@@ -62,8 +62,9 @@ public class CacheKey implements Cloneable, Serializable {
 
     count++;
     checksum += baseHashCode;
+    // 对象的hashcode扩大count倍
     baseHashCode *= count;
-
+    // hashcode * 扩展因子（默认37）+ 拓展扩大后的对象hashcode
     hashcode = multiplier * hashcode + baseHashCode;
 
     updateList.add(object);

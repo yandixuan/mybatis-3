@@ -38,6 +38,9 @@ import org.apache.ibatis.transaction.Transaction;
  */
 public class ReuseExecutor extends BaseExecutor {
 
+  /**
+   * 维护了一个statement的缓存集合 key:sql
+   */
   private final Map<String, Statement> statementMap = new HashMap<>();
 
   public ReuseExecutor(Configuration configuration, Transaction transaction) {
@@ -81,14 +84,21 @@ public class ReuseExecutor extends BaseExecutor {
     Statement stmt;
     BoundSql boundSql = handler.getBoundSql();
     String sql = boundSql.getSql();
+    // 存在
     if (hasStatementFor(sql)) {
+      // 从缓存中获得 Statement 或 PrepareStatement 对象
       stmt = getStatement(sql);
+      // 设置事务超时时间
       applyTransactionTimeout(stmt);
     } else {
+      // 获取连接
       Connection connection = getConnection(statementLog);
+      // 创建 Statement 或 PrepareStatement 对象
       stmt = handler.prepare(connection, transaction.getTimeout());
+      // 添加到缓存中
       putStatement(sql, stmt);
     }
+    // 设置 SQL 上的参数，例如 PrepareStatement 对象上的占位符
     handler.parameterize(stmt);
     return stmt;
   }

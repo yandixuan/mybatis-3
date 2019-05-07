@@ -40,9 +40,12 @@ public class ParameterExpression extends HashMap<String, String> {
   }
 
   private void parse(String expression) {
+    // 返回不是空格字符的位置
     int p = skipWS(expression, 0);
+    // 如果字符是'('
     if (expression.charAt(p) == '(') {
       expression(expression, p + 1);
+      // 否则就是属性，开始解析属性
     } else {
       property(expression, p);
     }
@@ -64,13 +67,23 @@ public class ParameterExpression extends HashMap<String, String> {
   }
 
   private void property(String expression, int left) {
+    // 开始解析property的位置必须不是expression的长度
     if (left < expression.length()) {
+      // 根据任意',:'结束符获取right的位置（第一个必然是属性）
       int right = skipUntil(expression, left, ",:");
+      // 去掉空格之后放入Map的property属性中
       put("property", trimmedStr(expression, left, right));
+      // 从right开始解析额外属性eg:javaType,jdbcType,typeHandler
       jdbcTypeOpt(expression, right);
     }
   }
 
+  /**
+   * 跳过空格 0x20 16进制代表空格
+   * @param expression
+   * @param p
+   * @return 返回不是空格的位置
+   */
   private int skipWS(String expression, int p) {
     for (int i = p; i < expression.length(); i++) {
       if (expression.charAt(i) > 0x20) {
@@ -91,8 +104,11 @@ public class ParameterExpression extends HashMap<String, String> {
   }
 
   private void jdbcTypeOpt(String expression, int p) {
+    // #{property,javaType=int,jdbcType=NUMERIC}
+    // property:VARCHAR
     p = skipWS(expression, p);
     if (p < expression.length()) {
+      //第一个property解析完有两种情况，逗号和冒号
       if (expression.charAt(p) == ':') {
         jdbcType(expression, p + 1);
       } else if (expression.charAt(p) == ',') {
@@ -104,13 +120,17 @@ public class ParameterExpression extends HashMap<String, String> {
   }
 
   private void jdbcType(String expression, int p) {
+    // property:VARCHAR 所以解析的应该是属性对应jdbcType
     int left = skipWS(expression, p);
     int right = skipUntil(expression, left, ",");
+    // 结束的位置应该大于开始的位置
     if (right > left) {
       put("jdbcType", trimmedStr(expression, left, right));
+      // 否则抛出 BuilderException在p位置有错
     } else {
       throw new BuilderException("Parsing error in {" + expression + "} in position " + p);
     }
+    // 接着解析options
     option(expression, right + 1);
   }
 
@@ -122,11 +142,19 @@ public class ParameterExpression extends HashMap<String, String> {
       left = right + 1;
       right = skipUntil(expression, left, ",");
       String value = trimmedStr(expression, left, right);
+      // name,value键值对放入map
       put(name, value);
       option(expression, right + 1);
     }
   }
 
+  /**
+   * 首尾去空格
+   * @param str
+   * @param start
+   * @param end
+   * @return
+   */
   private String trimmedStr(String str, int start, int end) {
     while (str.charAt(start) <= 0x20) {
       start++;
