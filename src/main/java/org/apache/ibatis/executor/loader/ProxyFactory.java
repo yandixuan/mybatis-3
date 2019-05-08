@@ -28,6 +28,16 @@ public interface ProxyFactory {
 
   void setProperties(Properties properties);
 
+  /**
+   * 创建代理对象
+   * @param target
+   * @param lazyLoader
+   * @param configuration
+   * @param objectFactory
+   * @param constructorArgTypes
+   * @param constructorArgs
+   * @return
+   */
   Object createProxy(Object target, ResultLoaderMap lazyLoader, Configuration configuration, ObjectFactory objectFactory, List<Class<?>> constructorArgTypes, List<Object> constructorArgs);
 
 }

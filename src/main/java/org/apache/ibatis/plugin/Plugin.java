@@ -41,8 +41,11 @@ public class Plugin implements InvocationHandler {
   }
 
   public static Object wrap(Object target, Interceptor interceptor) {
+    // 获得拦截的方法映射
     Map<Class<?>, Set<Method>> signatureMap = getSignatureMap(interceptor);
+    // 获得目标类的类型
     Class<?> type = target.getClass();
+    // 获得目标类的接口集合
     Class<?>[] interfaces = getAllInterfaces(type, signatureMap);
     if (interfaces.length > 0) {
       return Proxy.newProxyInstance(
@@ -56,8 +59,12 @@ public class Plugin implements InvocationHandler {
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
+      // 根据方法对应的class从Map获取到相应的methods数组
       Set<Method> methods = signatureMap.get(method.getDeclaringClass());
+      // 如果方法包含在内
       if (methods != null && methods.contains(method)) {
+        // 执行拦截器的方法
+        // Invocation.proceed()会执行被代理对象的原方法从而到达代理目的
         return interceptor.intercept(new Invocation(target, method, args));
       }
       return method.invoke(target, args);
@@ -67,16 +74,20 @@ public class Plugin implements InvocationHandler {
   }
 
   private static Map<Class<?>, Set<Method>> getSignatureMap(Interceptor interceptor) {
+    // 获去@Intercepts注解信息
     Intercepts interceptsAnnotation = interceptor.getClass().getAnnotation(Intercepts.class);
     // issue #251
     if (interceptsAnnotation == null) {
       throw new PluginException("No @Intercepts annotation was found in interceptor " + interceptor.getClass().getName());
     }
+    // 获取要拦截的方法签名相关新
     Signature[] sigs = interceptsAnnotation.value();
+    // 创建signatureMap存储拦截的class与method
     Map<Class<?>, Set<Method>> signatureMap = new HashMap<>();
     for (Signature sig : sigs) {
       Set<Method> methods = signatureMap.computeIfAbsent(sig.type(), k -> new HashSet<>());
       try {
+        // 根据方法名称与参数类型反射获取Method
         Method method = sig.type().getMethod(sig.method(), sig.args());
         methods.add(method);
       } catch (NoSuchMethodException e) {
@@ -88,8 +99,10 @@ public class Plugin implements InvocationHandler {
 
   private static Class<?>[] getAllInterfaces(Class<?> type, Map<Class<?>, Set<Method>> signatureMap) {
     Set<Class<?>> interfaces = new HashSet<>();
+    // 遍历所有的接口
     while (type != null) {
       for (Class<?> c : type.getInterfaces()) {
+        // 如果包含在signatureMap内
         if (signatureMap.containsKey(c)) {
           interfaces.add(c);
         }

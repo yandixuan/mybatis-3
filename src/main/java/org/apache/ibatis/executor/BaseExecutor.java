@@ -213,9 +213,12 @@ public abstract class BaseExecutor implements Executor {
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
+    // 创建 DeferredLoad 对象
     DeferredLoad deferredLoad = new DeferredLoad(resultObject, property, key, localCache, configuration, targetType);
+    // 如果可加载，则执行加载
     if (deferredLoad.canLoad()) {
       deferredLoad.load();
+      // 如果不可加载，则添加到 deferredLoads延迟队列中
     } else {
       deferredLoads.add(new DeferredLoad(resultObject, property, key, localCache, configuration, targetType));
     }
@@ -424,6 +427,7 @@ public abstract class BaseExecutor implements Executor {
       // we suppose we get back a List
       List<Object> list = (List<Object>) localCache.getObject(key);
       Object value = resultExtractor.extractObjectFromList(list, targetType);
+      // 设置到 resultObject 中
       resultObject.setValue(property, value);
     }
 
