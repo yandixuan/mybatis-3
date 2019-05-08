@@ -740,6 +740,7 @@ public class Configuration {
   }
 
   public MappedStatement getMappedStatement(String id, boolean validateIncompleteStatements) {
+    // 校验，保证所有 MappedStatement 已经构造完毕
     if (validateIncompleteStatements) {
       buildAllStatements();
     }
@@ -795,13 +796,16 @@ public class Configuration {
    * statement validation.
    */
   protected void buildAllStatements() {
+    // 保证 incompleteResultMaps 被解析完
     parsePendingResultMaps();
     if (!incompleteCacheRefs.isEmpty()) {
+      // 保证 incompleteCacheRefs 被解析完
       synchronized (incompleteCacheRefs) {
         incompleteCacheRefs.removeIf(x -> x.resolveCacheRef() != null);
       }
     }
     if (!incompleteStatements.isEmpty()) {
+      // 保证 incompleteStatements 被解析完
       synchronized (incompleteStatements) {
         incompleteStatements.removeIf(x -> {
           x.parseStatementNode();
@@ -810,6 +814,7 @@ public class Configuration {
       }
     }
     if (!incompleteMethods.isEmpty()) {
+      // 保证 incompleteMethods 被解析完
       synchronized (incompleteMethods) {
         incompleteMethods.removeIf(x -> {
           x.resolve();
