@@ -13,30 +13,35 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.apache.ibatis.submitted.dynsql;
+package org.apache.ibatis.submitted.array_type_handler;
 
-import org.apache.ibatis.annotations.Param;
+public class User {
 
-import java.util.List;
+  private Integer id;
+  private String name;
+  private String[] nicknames;
 
-public interface DynSqlMapper {
-  String selectDescription(@Param("p") String p);
-
-  List<String> selectDescriptionById(Integer id);
-  List<String> selectDescriptionByConditions(Conditions conditions);
-  List<String> selectDescriptionByConditions2(Conditions conditions);
-  List<String> selectDescriptionByConditions3(Conditions conditions);
-
-  class Conditions {
-    private Integer id;
-
-    public void setId(Integer id) {
-      this.id = id;
-    }
-
-    public Integer getId() {
-      return id;
-    }
+  public Integer getId() {
+    return id;
   }
 
+  public void setId(Integer id) {
+    this.id = id;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public String[] getNicknames() {
+    return nicknames;
+  }
+
+  public void setNicknames(String[] nicknames) {
+    this.nicknames = nicknames;
+  }
 }

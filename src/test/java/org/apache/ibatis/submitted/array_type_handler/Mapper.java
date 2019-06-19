@@ -13,30 +13,16 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.apache.ibatis.submitted.dynsql;
+package org.apache.ibatis.submitted.array_type_handler;
 
-import org.apache.ibatis.annotations.Param;
+public interface Mapper {
 
-import java.util.List;
+  void insert(User user);
 
-public interface DynSqlMapper {
-  String selectDescription(@Param("p") String p);
+  int getUserCount();
 
-  List<String> selectDescriptionById(Integer id);
-  List<String> selectDescriptionByConditions(Conditions conditions);
-  List<String> selectDescriptionByConditions2(Conditions conditions);
-  List<String> selectDescriptionByConditions3(Conditions conditions);
-
-  class Conditions {
-    private Integer id;
-
-    public void setId(Integer id) {
-      this.id = id;
-    }
-
-    public Integer getId() {
-      return id;
-    }
-  }
-
+  /**
+   * HSQL returns NULL when asked for the cardinality of an array column with NULL value :-(
+   */
+  Integer getNicknameCount();
 }
